@@ -4,6 +4,8 @@ from IPython import embed
 import tensorflow as tf
 import keras
 from tensorflow.keras import layers
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+
 
 pretrained_model = keras.applications.ResNet50(
     include_top=False,
@@ -16,7 +18,7 @@ pretrained_model = keras.applications.ResNet50(
     name="resnet50",
 )
 
-pretrained_model.trainable = True
+pretrained_model.trainable = False
 
 inputs = keras.Input(shape=(224, 224, 3))
 x = pretrained_model(inputs, training=False)
@@ -28,7 +30,8 @@ model = keras.Model(inputs, outputs)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 
-IMAGES_DIR = "/home/steffi/Downloads/Beispiel_Source_Code/speckle/images"
+IMAGES_DIR = "images/band_filter"
+
 
 ds = tf.keras.utils.image_dataset_from_directory(
     IMAGES_DIR,
@@ -37,6 +40,39 @@ ds = tf.keras.utils.image_dataset_from_directory(
     shuffle=True,
     seed=42
 )
+print(f"DEBUG: ds.class_names: {ds.class_names}")
+
+
+# plot samples
+def plot_samples(ds):
+    plt.figure(figsize=(10, 10))
+    for images, labels in ds.take(1):
+        for i in range(9):
+            ax = plt.subplot(3, 3, i + 1)
+            plt.imshow(images[i].numpy().astype("uint8"))
+            plt.title(ds.class_names[labels[i]])
+            plt.axis("off")
+    plt.savefig("samples.png")
+    print("Plottig sampels done.")
+
+def plot_confusion(ds,model):
+    y_true = []
+    y_pred = []
+    for images, labels in test_ds:
+        preds = model.predict(images)
+        y_true.extend(labels.numpy())
+        y_pred.extend(np.argmax(preds, axis=1))
+
+    # Compute confusion matrix
+    cm = confusion_matrix(y_true, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=ds.class_names)
+    # disp.plot(cmap=plt.cm.Blues)
+    disp.plot()
+    plt.title("Confusion Matrix")
+    plt.savefig("confusion.png")
+
+
+
 
 total_batches = len(ds)
 train_size = int(0.7 * total_batches)
@@ -55,7 +91,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 # --- 5. TRAINING ---
-EPOCHS = 10  # Adjust as needed
+EPOCHS = 15  # Adjust as needed
 
 print("\nStarting Training...")
 history = model.fit(
@@ -70,4 +106,9 @@ test_loss, test_acc = model.evaluate(test_ds)
 print(f"Test Loss: {test_loss:.4f}")
 print(f"Test Accuracy: {test_acc:.4f}")
 
-embed()
+
+plot_samples(ds)
+plot_confusion(ds,model)
+
+# todo
+# data augmentation
