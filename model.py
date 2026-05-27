@@ -32,6 +32,7 @@ inputs = keras.Input(shape=(224, 224, 3))
 x = tf.keras.applications.resnet50.preprocess_input(inputs)
 x = pretrained_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
+x = layers.Dropout(0.2)(x)
 outputs = layers.Dense(4, activation='softmax')(x)
 model = keras.Model(inputs, outputs)
 
@@ -159,3 +160,6 @@ plot_misclassified_samples(test_ds, model, ds.class_names)
 
 # todo
 # data augmentation
+# dropout
+# resnet50 train 20 layers?
+# plots validation and training loss
