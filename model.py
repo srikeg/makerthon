@@ -5,6 +5,14 @@ import tensorflow as tf
 import keras
 from tensorflow.keras import layers
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+import os
+from datetime import datetime
+
+
+timestamp = datetime.now().strftime("%m%d-%H%M%S")
+output_dir = f"outputs/{timestamp}"
+os.makedirs(output_dir, exist_ok=True)
+print(f"Saving outputs to: {output_dir}")
 
 
 pretrained_model = keras.applications.ResNet50(
@@ -52,7 +60,7 @@ def plot_samples(ds):
             plt.imshow(images[i].numpy().astype("uint8"))
             plt.title(ds.class_names[labels[i]])
             plt.axis("off")
-    plt.savefig("samples.png")
+    plt.savefig(os.path.join(output_dir,"samples.png"))
     print("Plottig sampels done.")
 
 def plot_confusion(ds,model):
@@ -69,7 +77,7 @@ def plot_confusion(ds,model):
     # disp.plot(cmap=plt.cm.Blues)
     disp.plot()
     plt.title("Confusion Matrix")
-    plt.savefig("confusion.png")
+    plt.savefig(os.path.join(output_dir,"confusion.png"))
 
 
 def plot_misclassified_samples(test_ds, model, class_names, max_samples=9):
@@ -98,7 +106,7 @@ def plot_misclassified_samples(test_ds, model, class_names, max_samples=9):
         plt.title(f"True: {class_names[misclassified_true[i]]}\nPred: {class_names[misclassified_pred[i]]}")
         plt.axis("off")
     plt.tight_layout()
-    plt.savefig("misclassified_samples.png")
+    plt.savefig(os.path.join(output_dir,"misclassified_samples.png"))
     print("Plotted misclassified samples.")
 
 
