@@ -29,7 +29,8 @@ pretrained_model = keras.applications.ResNet50(
 pretrained_model.trainable = False
 
 inputs = keras.Input(shape=(224, 224, 3))
-x = pretrained_model(inputs, training=False)
+x = tf.keras.applications.resnet50.preprocess_input(inputs)
+x = pretrained_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
 outputs = layers.Dense(4, activation='softmax')(x)
 model = keras.Model(inputs, outputs)
@@ -48,7 +49,6 @@ ds = tf.keras.utils.image_dataset_from_directory(
     shuffle=True,
     seed=42
 )
-print(f"DEBUG: ds.class_names: {ds.class_names}")
 
 
 # plot samples
@@ -109,10 +109,18 @@ def plot_misclassified_samples(test_ds, model, class_names, max_samples=9):
     plt.savefig(os.path.join(output_dir,"misclassified_samples.png"))
     print("Plotted misclassified samples.")
 
+def save_model(model, output_dir):
+    model_path = os.path.join(output_dir, "model.keras")
+    model.save(model_path)
+    print(f"Model saved to {model_path}")
+
+
 
 total_batches = len(ds)
 train_size = int(0.7 * total_batches)
 val_size = int(0.15 * total_batches)
+# train_size = int(0.5 * total_batches)
+# val_size = int(0.15 * total_batches)
 
 # Use .take() and .skip() to partition the dataset
 train_ds = ds.take(train_size)
@@ -127,7 +135,7 @@ val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 # --- 5. TRAINING ---
-EPOCHS = 15  # Adjust as needed
+EPOCHS = 10  # Adjust as needed
 
 print("\nStarting Training...")
 history = model.fit(
@@ -141,12 +149,13 @@ print("\nEvaluating on Test Dataset:")
 test_loss, test_acc = model.evaluate(test_ds)
 print(f"Test Loss: {test_loss:.4f}")
 print(f"Test Accuracy: {test_acc:.4f}")
+print(model.summary())
 
 
+save_model(model, output_dir)
 plot_samples(ds)
 plot_confusion(ds,model)
 plot_misclassified_samples(test_ds, model, ds.class_names)
 
 # todo
 # data augmentation
-# plot wrong classified samples
