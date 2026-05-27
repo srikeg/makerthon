@@ -72,6 +72,34 @@ def plot_confusion(ds,model):
     plt.savefig("confusion.png")
 
 
+def plot_misclassified_samples(test_ds, model, class_names, max_samples=9):
+
+    misclassified_images = []
+    misclassified_true = []
+    misclassified_pred = []
+
+    for images, labels in test_ds:
+        preds = model.predict(images)
+        pred_labels = np.argmax(preds, axis=1)
+        for img, true, pred in zip(images, labels.numpy(), pred_labels):
+            if true != pred:
+                misclassified_images.append(img.numpy().astype("uint8"))
+                misclassified_true.append(true)
+                misclassified_pred.append(pred)
+            if len(misclassified_images) >= max_samples:
+                break
+        if len(misclassified_images) >= max_samples:
+            break
+
+    plt.figure(figsize=(10, 10))
+    for i in range(len(misclassified_images)):
+        ax = plt.subplot(3, 3, i + 1)
+        plt.imshow(misclassified_images[i])
+        plt.title(f"True: {class_names[misclassified_true[i]]}\nPred: {class_names[misclassified_pred[i]]}")
+        plt.axis("off")
+    plt.tight_layout()
+    plt.savefig("misclassified_samples.png")
+    print("Plotted misclassified samples.")
 
 
 total_batches = len(ds)
@@ -109,6 +137,8 @@ print(f"Test Accuracy: {test_acc:.4f}")
 
 plot_samples(ds)
 plot_confusion(ds,model)
+plot_misclassified_samples(test_ds, model, ds.class_names)
 
 # todo
 # data augmentation
+# plot wrong classified samples

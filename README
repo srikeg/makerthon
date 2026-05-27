@@ -1,0 +1,5 @@
+setup env with 
+`pixi install`
+
+run python scipt with
+`pixi run python model.py`
