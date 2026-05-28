@@ -7,11 +7,11 @@ from tensorflow.keras import layers
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 import os
 from datetime import datetime
-
+import config
 
 timestamp = datetime.now().strftime("%m%d-%H%M%S")
-# output_dir = f"outputs/{timestamp}"
-output_dir = "outputs"
+output_dir = f"output_data2/{timestamp}"
+# output_dir = "outputs"
 os.makedirs(output_dir, exist_ok=True)
 print(f"Saving outputs to: {output_dir}")
 
@@ -51,13 +51,8 @@ model = keras.Model(inputs, outputs)
 # Compile
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-
-# IMAGES_DIR = "images/band_filter"
-IMAGES_DIR = "trainings_data"
-
-
 ds = tf.keras.utils.image_dataset_from_directory(
-    IMAGES_DIR,
+    config.TRAININGS_DATA_DIR,
     image_size=(224,224),
     batch_size=32,
     shuffle=True,
@@ -65,7 +60,6 @@ ds = tf.keras.utils.image_dataset_from_directory(
 )
 
 
-# plot samples
 def plot_samples(ds):
     plt.figure(figsize=(10, 10))
     for images, labels in ds.take(1):
@@ -128,28 +122,32 @@ def save_model(model, output_dir):
     model.save(model_path)
     print(f"Model saved to {model_path}")
 
+def plot_accuracy():
+
+    plt.figure()
+    plt.plot(history.history['loss'], label='Training Loss')
+    plt.plot(history.history['val_loss'], label='Validation Loss')
+    plt.title('Model Loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(loc='upper right')
+    plt.savefig(os.path.join(output_dir, "loss_curve.png"))
 
 
 total_batches = len(ds)
 train_size = int(0.7 * total_batches)
 val_size = int(0.15 * total_batches)
-# train_size = int(0.5 * total_batches)
-# val_size = int(0.15 * total_batches)
 
-# Use .take() and .skip() to partition the dataset
 train_ds = ds.take(train_size)
 val_ds = ds.skip(train_size).take(val_size)
 test_ds = ds.skip(train_size + val_size)
 
-# --- 4. PERFORMANCE OPTIMIZATION ---
-# Cache and prefetch data to prevent I/O bottlenecks during training
 AUTOTUNE = tf.data.AUTOTUNE
 train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
-# --- 5. TRAINING ---
-EPOCHS = 10  # Adjust as needed
+EPOCHS = 50  # Adjust as needed
 
 print("\nStarting Training...")
 history = model.fit(
@@ -170,6 +168,7 @@ save_model(model, output_dir)
 plot_samples(ds)
 plot_confusion(ds,model)
 plot_misclassified_samples(test_ds, model, ds.class_names)
+plot_accuracy()
 
 # todo
 # data augmentation => way less acc
