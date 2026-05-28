@@ -52,7 +52,8 @@ model = keras.Model(inputs, outputs)
 model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
 
-IMAGES_DIR = "images/band_filter"
+# IMAGES_DIR = "images/band_filter"
+IMAGES_DIR = "trainings_data"
 
 
 ds = tf.keras.utils.image_dataset_from_directory(
