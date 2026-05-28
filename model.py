@@ -10,7 +10,8 @@ from datetime import datetime
 
 
 timestamp = datetime.now().strftime("%m%d-%H%M%S")
-output_dir = f"outputs/{timestamp}"
+# output_dir = f"outputs/{timestamp}"
+output_dir = "outputs"
 os.makedirs(output_dir, exist_ok=True)
 print(f"Saving outputs to: {output_dir}")
 
@@ -27,8 +28,19 @@ pretrained_model = keras.applications.ResNet50(
 )
 
 pretrained_model.trainable = False
+# data_augmentation = keras.Sequential(
+#     [
+#         layers.RandomFlip("horizontal_and_vertical"),
+#         layers.RandomRotation(0.2),
+#         layers.RandomZoom(0.2),
+#         layers.RandomTranslation(height_factor=0.1, width_factor=0.1),
+#     ],
+#     name="data_augmentation",
+# )
 
 inputs = keras.Input(shape=(224, 224, 3))
+
+# x = data_augmentation(inputs)
 x = tf.keras.applications.resnet50.preprocess_input(inputs)
 x = pretrained_model(x, training=False)
 x = layers.GlobalAveragePooling2D()(x)
@@ -159,7 +171,7 @@ plot_confusion(ds,model)
 plot_misclassified_samples(test_ds, model, ds.class_names)
 
 # todo
-# data augmentation
+# data augmentation => way less acc
 # dropout
 # resnet50 train 20 layers?
 # plots validation and training loss

@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 
 # 1. Load your trained model
-model = tf.keras.models.load_model('/home/StefanieGirod/makerthon/outputs/0527-134659/model.keras')
+model = tf.keras.models.load_model('outputs/')
 # model = tf.keras.models.load_model('/home/StefanieGirod/makerthon/outputs/0527-115113/model.keras')
 
 IMAGE_DIR = "/home/StefanieGirod/makerthon/images/band_filter/acr"
