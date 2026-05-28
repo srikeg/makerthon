@@ -2,7 +2,7 @@
 authors = ["Stefanie Girod <stefanie.girod@rwth-aachen.de>"]
 channels = ["conda-forge", "pytorch"]
 name = "makerthon"
-platforms = ["linux-64"]
+platforms = ["linux-64", "linux-aarch64"]
 version = "0.1.0"
 
 [tasks]
